@@ -1,12 +1,13 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription,RegisterEventHandler
 from launch.substitutions import LaunchConfiguration, Command, FindExecutable, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
+from launch.event_handlers import OnProcessExit
 
 def generate_launch_description():
 
@@ -53,13 +54,13 @@ def generate_launch_description():
         output="screen",
     )
 
-    control_manager_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        name = 'controller_manager',
-        parameters=[robot_description],
-        output="screen",
-    )
+    # control_manager_node = Node(
+    #     package="controller_manager",
+    #     executable="ros2_control_node",
+    #     name = 'controller_manager',
+    #     parameters=[robot_description],
+    #     output="screen",
+    # )
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -67,11 +68,11 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
-    robot_controller_spawner = Node(
+    PD_jnt_control = Node(
         package="controller_manager",
         executable="spawner",
         #arguments=['GazeboSystem'],
-        arguments=["forward_position_controller", "--controller-manager", "/controller_manager"],
+        arguments=["PD_control", "--controller-manager", "/controller_manager"],
     )
 
 
@@ -82,17 +83,27 @@ def generate_launch_description():
             default_value='true',
             description='Use simulation (Gazebo) clock if true'),
 
-        IncludeLaunchDescription(
-          PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('rlg_quad_controller'),
-            'launch',
-            'mulinex_inference.launch.py')])
-        ),
+        # IncludeLaunchDescription(
+        #   PythonLaunchDescriptionSource([os.path.join(
+        #     get_package_share_directory('rlg_quad_controller'),
+        #     'launch',
+        #     'mulinex_inference.launch.py')])
+        # ),
         gazebo,
-        control_manager_node,
+        # control_manager_node,
         node_robot_state_publisher,
         spawn_entity,
-        joint_state_broadcaster_spawner,
-        robot_controller_spawner,
-
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=spawn_entity,
+                on_exit=[joint_state_broadcaster_spawner],
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=spawn_entity,
+                on_exit=[PD_jnt_control],
+            )
+        ),
+     
   ])

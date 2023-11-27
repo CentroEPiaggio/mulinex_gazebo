@@ -28,11 +28,39 @@ def generate_launch_description():
             launch_arguments={"pause": "true", "verbose": "false"}.items(),
     )
 
+    default_dof    = (
+            2.094,     
+            -2.094,    
+            -2.094,
+            2.094,
+            -0.7854,   
+            0.7854,    
+            0.7854,
+            -0.7854,
+    )
+    joint_names=(
+        'LF_HFE',   
+        'LH_HFE',   
+        'RF_HFE',
+        'RH_HFE',
+        'LF_KFE',   
+        'LH_KFE',   
+        'RF_KFE',
+        'RH_KFE',
+    )
+    default_dict = dict(zip(joint_names, default_dof))
+
+    #format is "NAME:=VALUE "
+    default_joint_args = ""
+    for key, value in default_dict.items():
+        default_joint_args += key + ":=" + str(value) + " "
+
     # Get URDF via xacro
     mulinex_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ", urdf, " use_gazebo:=true ",
+            default_joint_args
         ]
     )
 
@@ -50,7 +78,16 @@ def generate_launch_description():
         package="gazebo_ros",
         executable="spawn_entity.py",
         arguments=["-topic", "robot_description", "-entity", "mulinex",
-                   "-x", "0", "-y", "0", "-z", "0.5"],
+                    "-x", "0", "-y", "0", "-z", "0.4",
+                    # "-J", "LF_HFE:="+str(default_dict['LF_HFE']),
+                    # "-J", "LH_HFE:="+str(default_dict['LH_HFE']),
+                    # "-J", "RF_HFE:="+str(default_dict['RF_HFE']),
+                    # "-J", "RH_HFE:="+str(default_dict['RH_HFE']),
+                    # "-J", "LF_KFE:="+str(default_dict['LF_KFE']),
+                    # "-J", "LH_KFE:="+str(default_dict['LH_KFE']),
+                    # "-J", "RF_KFE:="+str(default_dict['RF_KFE']),
+                    # "-J", "RH_KFE:="+str(default_dict['RH_KFE']),
+                    ],
         output="screen",
     )
 

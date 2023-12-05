@@ -8,6 +8,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch.event_handlers import OnProcessExit
+import numpy as np
 
 def generate_launch_description():
 
@@ -38,6 +39,21 @@ def generate_launch_description():
             0.7854,
             -0.7854,
     )
+
+    hip_angle = 120.0
+    knee_angle = 60.0
+
+    default_dof    = (
+            np.deg2rad(hip_angle),     
+            -(np.deg2rad(hip_angle)),    
+            -(np.deg2rad(hip_angle)),
+            np.deg2rad(hip_angle),
+            -np.deg2rad(knee_angle),   
+            np.deg2rad(knee_angle),    
+            np.deg2rad(knee_angle),
+            -np.deg2rad(knee_angle),
+    )
+
     joint_names=(
         'LF_HFE',   
         'LH_HFE',   
@@ -79,14 +95,6 @@ def generate_launch_description():
         executable="spawn_entity.py",
         arguments=["-topic", "robot_description", "-entity", "mulinex",
                     "-x", "0", "-y", "0", "-z", "0.4",
-                    # "-J", "LF_HFE:="+str(default_dict['LF_HFE']),
-                    # "-J", "LH_HFE:="+str(default_dict['LH_HFE']),
-                    # "-J", "RF_HFE:="+str(default_dict['RF_HFE']),
-                    # "-J", "RH_HFE:="+str(default_dict['RH_HFE']),
-                    # "-J", "LF_KFE:="+str(default_dict['LF_KFE']),
-                    # "-J", "LH_KFE:="+str(default_dict['LH_KFE']),
-                    # "-J", "RF_KFE:="+str(default_dict['RF_KFE']),
-                    # "-J", "RH_KFE:="+str(default_dict['RH_KFE']),
                     ],
         output="screen",
     )

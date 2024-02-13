@@ -8,11 +8,13 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch.event_handlers import OnProcessExit
+import launch_ros.actions
+
 import numpy as np
 
 def generate_launch_description():
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
     urdf = os.path.join(
         get_package_share_directory('mulinex_description'),
@@ -27,17 +29,6 @@ def generate_launch_description():
                 [PathJoinSubstitution([FindPackageShare("gazebo_ros"), "launch", "gazebo.launch.py"])]
             ),
             launch_arguments={"pause": "true", "verbose": "false"}.items(),
-    )
-
-    default_dof    = (
-            2.094,     
-            -2.094,    
-            -2.094,
-            2.094,
-            -0.7854,   
-            0.7854,    
-            0.7854,
-            -0.7854,
     )
 
     hip_angle = 120.0
@@ -94,7 +85,7 @@ def generate_launch_description():
         package="gazebo_ros",
         executable="spawn_entity.py",
         arguments=["-topic", "robot_description", "-entity", "mulinex",
-                    "-x", "0", "-y", "0", "-z", "0.4",
+                    "-x", "0", "-y", "0", "-z", "0.34",
                     ],
         output="screen",
     )
@@ -104,6 +95,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+
     )
 
     PD_jnt_control = Node(
@@ -114,11 +106,8 @@ def generate_launch_description():
 
 
     return LaunchDescription([
+        launch_ros.actions.SetParameter(name='use_sim_time', value=True),
 
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='true',
-            description='Use simulation (Gazebo) clock if true'),
 
         gazebo,
 

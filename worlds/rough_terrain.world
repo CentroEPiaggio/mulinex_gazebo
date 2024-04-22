@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+    <world name="cp_testbed">
+        <include>
+                <uri>model://sun</uri>
+        </include>
+        <include>
+            <uri>model://rough_terrain</uri>
+        </include>
+    </world>
+</sdf>

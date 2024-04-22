@@ -23,12 +23,13 @@ def generate_launch_description():
     )
 
     print("urdf_file_name : {}".format(urdf))
+    # to include custom world: export GAZEBO_MODEL_PATH=/usr/share/gazebo-11/models:/home/jacopo/Documents/locosim_ws/src/mulinex_gazebo/models
 
     gazebo = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 [PathJoinSubstitution([FindPackageShare("gazebo_ros"), "launch", "gazebo.launch.py"])]
             ),
-            launch_arguments={"pause": "true", "verbose": "false"}.items(),
+            launch_arguments={"pause": "true", "verbose": "false", 'world': '/home/jacopo/Documents/locosim_ws/src/mulinex_gazebo/worlds/rough_terrain.world'}.items(),
     )
 
     hip_angle = 120.0
